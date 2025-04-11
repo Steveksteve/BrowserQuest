@@ -1,42 +1,68 @@
-// Début de script_v2.js
+const ws = new WebSocket(`ws://${window.location.host}/ws`);
+ws.binaryType = 'blob';
 
-// Sélection des éléments du DOM
-const socket = new WebSocket(`ws://${window.location.host}/`); // Utilise l'URL relative
-const messages = document.getElementById('messages');
-const input = document.getElementById('input');
-const send = document.getElementById('send');
+const messagesDiv = document.getElementById('messages');
+const input = document.getElementById('messageInput');
+const sendBtn = document.getElementById('sendBtn');
 
-// Gestion de la connexion WebSocket ouverte
-socket.addEventListener('open', () => {
-    console.log('Connected to server');
+// 🔐 Protection XSS - échappement HTML
+function escapeHTML(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+// Affichage d’un message dans la zone de chat
+function displayMessage(msg) {
+  const p = document.createElement('p');
+  p.innerHTML = escapeHTML(msg);
+  messagesDiv.appendChild(p);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Envoi d’un message via WebSocket
+function sendMessage() {
+  const msg = input.value.trim();
+  if (msg !== '' && msg.length < 500) {
+    ws.send(msg);
+    input.value = '';
+  }
+}
+
+// Gestion des événements WebSocket
+ws.onopen = () => {
+  console.log('✅ Connexion WebSocket établie');
+  startPing(); // Lancer le ping régulier
+};
+
+ws.onmessage = async (event) => {
+  const msg = typeof event.data === 'string' ? event.data : await event.data.text();
+  if (msg.startsWith("ping-")) {
+    const pingId = msg.split("-")[1];
+    const latency = Date.now() - Number(pingId);
+    document.getElementById('pingValue').textContent = `Ping : ${latency} ms`;
+    return;
+  }
+  displayMessage(msg);
+};
+
+ws.onclose = () => {
+  console.log('❌ Connexion WebSocket fermée');
+};
+
+// Envoi via bouton ou touche Entrée
+sendBtn.onclick = sendMessage;
+input.addEventListener('keyup', (event) => {
+  if (event.key === 'Enter') {
+    sendMessage();
+  }
 });
 
-// Gestion des messages reçus du serveur
-socket.addEventListener('message', event => {
-    const message = document.createElement('p');
-    message.textContent = 'Server: ' + event.data;
-    messages.appendChild(message);
-});
-
-// Gestion des erreurs WebSocket
-socket.addEventListener('error', (error) => {
-    console.error('WebSocket Error:', error);
-});
-
-// Gestion de la fermeture de la connexion WebSocket
-socket.addEventListener('close', (event) => {
-    console.log('WebSocket Closed:', event);
-});
-
-// Gestion de l'envoi de messages au serveur
-send.addEventListener('click', () => {
-    if (input.value) {
-        socket.send(input.value);
-        const message = document.createElement('p');
-        message.textContent = `Client: ${input.value}`;
-        messages.appendChild(message);
-        input.value = '';
-    }
-});
-
-// Fin de script_v2.js
+// 🔁 Envoi de ping toutes les 5 secondes
+function startPing() {
+  setInterval(() => {
+    const pingId = `ping-${Date.now()}`;
+    ws.send(pingId);
+  }, 5000);
+}

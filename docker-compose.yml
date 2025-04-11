@@ -3,27 +3,25 @@ version: '3.8'
 services:
   server:
     build:
-      context: .
-      dockerfile: Dockerfile
-    # SUPPRIMER complètement la section 'ports' ici
+      context: ./server
     networks:
       - app-network
     deploy:
       mode: replicated
-      replicas: 3 # Nombre d'instances du serveur
-    environment: # Passer le port via une variable d'environnement
-      - PORT=3000
+      replicas: 3
+    environment:
+      - PORT=8080
 
   client:
     build:
       context: .
-      dockerfile: Dockerfile.nginx
+      dockerfile: client/Dockerfile.nginx
     ports:
-      - "80:80" # Nginx est le seul point d'entrée
-    networks:
-      - app-network
+      - "80:80"
     depends_on:
       - server
+    networks:
+      - app-network
 
 networks:
   app-network:

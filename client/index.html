@@ -1,13 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>BrowserQuest Server</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>Chat WebSocket</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div id="chat">
+    <h1>WebSocket Chat</h1>
+    <p id="pingValue">Ping : -- ms</p>
     <div id="messages"></div>
-    <input id="input" type="text">
-    <button id="send">Send</button>
-    <script src="script_v2.js"></script>
+    <input type="text" id="messageInput" placeholder="Tapez un message..." />
+    <button id="sendBtn">Envoyer</button>
+  </div>
+  <script src="script_v2.js"></script>
 </body>
 </html>

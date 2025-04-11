@@ -1,6 +1,7 @@
-FROM node:18-slim
+FROM node:18-alpine
 WORKDIR /app
-COPY server/package*.json ./
-RUN npm install
-COPY server ./
-CMD ["npm", "start"]
+COPY package.json .
+RUN npm install --omit=dev
+COPY index.js .
+EXPOSE 8080
+CMD ["node", "index.js"]

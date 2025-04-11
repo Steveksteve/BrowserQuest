@@ -1,13 +1,8 @@
 {
-  "name": "browserquest-server",
+  "name": "websocket-server",
   "version": "1.0.0",
-  "description": "BrowserQuest server",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
+  "description": "Serveur WebSocket Node.js",
   "dependencies": {
-    "ws": "^8.16.0"
-  },
-  "devDependencies": {}
+    "ws": "^8.12.0"
+  }
 }

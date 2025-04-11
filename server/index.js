@@ -1,28 +1,62 @@
 const http = require('http');
-const WebSocketServer = require('ws').Server;
+const WebSocket = require('ws');
+
+const PORT = process.env.PORT || 8080;
+
+const messageLimits = new Map(); // Anti-spam
 
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('BrowserQuest Server\n');
+    if (req.url === '/health') {
+        res.writeHead(200);
+        res.end('OK');
+        return;
+    }
+
+    res.writeHead(404);
+    res.end();
 });
 
-const wss = new WebSocketServer({ server });
+const wss = new WebSocket.Server({ server });
 
-wss.on('connection', ws => {
-  console.log('Client connected');
-  ws.send('Welcome to BrowserQuest!');
+// 🔒 Anti-spam : max 10 messages toutes les 10 secondes
+function isRateLimited(ws) {
+    const now = Date.now();
+    const timestamps = messageLimits.get(ws) || [];
+    const recent = timestamps.filter(ts => now - ts < 10000);
+    recent.push(now);
+    messageLimits.set(ws, recent);
+    return recent.length > 10;
+}
 
-  ws.on('message', message => {
-    console.log(`Received: ${message}`);
-    ws.send(`You sent: ${message}`);
-  });
+wss.on('connection', (ws) => {
+    console.log('Client connecté');
 
-  ws.on('close', () => {
-    console.log('Client disconnected');
-  });
+    ws.on('message', (message) => {
+        if (typeof message === 'string' && message.startsWith('ping-')) {
+            ws.send(message);
+            return;
+        }
+
+        if (isRateLimited(ws)) {
+            ws.send("⛔ Vous envoyez trop de messages !");
+            return;
+        }
+
+        console.log('Reçu: %s', message);
+
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(message);
+            }
+        });
+    });
+
+    ws.on('close', () => {
+        messageLimits.delete(ws);
+        console.log('Client déconnecté');
+    });
 });
 
-const PORT = process.env.PORT || 3000; // Utilise la variable d'environnement ou 3000 par défaut
 server.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+    console.log(`Serveur WebSocket & HTTP sur le port ${PORT}`);
 });
