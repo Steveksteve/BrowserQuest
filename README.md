@@ -1,80 +1,38 @@
-BrowserQuest [updated & with Socket.IO]
-============
+# 🎮 BrowserQuest – Docker Edition
 
-[![Node.js CI](https://github.com/nenuadrian/BrowserQuest/actions/workflows/node.js.yml/badge.svg)](https://github.com/nenuadrian/BrowserQuest/actions/workflows/node.js.yml)
+### 👩‍💻 Projet réalisé par :
+**Katia Sakri**  
+**Ryan Annic**
 
-![alt tag](https://raw.github.com/nenuadrian/BrowserQuest/master/screens/1.png)
+---
 
-Changes
-============
-  * Updated backend and frontend to use Socket.IO server and Client
-  * Main changes were made to ws.js and gameclient.js.
-  * Updated dependencies such as requirejs and jQuery to their latest versions
-  * Fixed build script
-  * Created a mini-dispatcher on the server side that provides the IP and Port in the configs as the ones for the game server.
-  * Added a demo to http://browserquest.codevolution.com
-  * A few minor edits to server side handling
+## 🧾 Description
 
-TODO
-============
-  * Quest system and more awesome features
- 
+Reprise, correction et déploiement Docker du projet **BrowserQuest**, un MMORPG open-source développé à l’origine par Mozilla.
 
+Ce projet avait pour objectif de remettre en état l’application Node.js d’origine, corriger les erreurs techniques, et réaliser un déploiement Docker fonctionnel.
 
-This is my take on Mozilla's amazing multiplayer open source game.
+---
 
-I've yet to find any other game that's so well done from graphics, implementation and features point of view (did I mention open source, multiplayer and browser based?).
+## 🚧 Travaux réalisés
 
-![alt tag](https://raw.github.com/nenuadrian/BrowserQuest/master/screens/2.png)
+- 🔁 Renommage de `map.js` en `themap.js` pour éviter les conflits avec `.map()` en JavaScript
+- 🔁 Remplacement des références `map.` par `theMap.`
+- 🧠 Ajout du bon export `Map = require('./themap')`
+- 🎵 Ajout des fichiers audio dans `client/audio/sound`
+- 🧩 Création du fichier `server.js` pour servir de point d'entrée au serveur
+- ⚙️ Ajout du support WebSocket (`ws`)
+- 🐳 Ajout des fichiers `Dockerfile` et `docker-compose.yml`
+- 🔧 Résolution des erreurs de module et de lancement
 
-I've wanted to use the game for a while and found many of its dependencies to be deprecated and even obsolete.
+---
 
-I've just taken the time to understand the code and thank you guys for making it so well structured.
+## 🐳 Lancer le projet avec Docker
 
-![alt tag](https://raw.github.com/nenuadrian/BrowserQuest/master/screens/3.png)
+### Étapes :
 
-This now works on the latest Socket.IO. Everything should work just as in the original developers intended.
+```bash
+git clone https://github.com/Steveksteve/Browserquest.git
+cd Browserquest
+docker-compose up --build
 
-Enjoy this amazing open source browser based role playing multiplayer 2D game!
-
-And a big thank you to the original developers is in order! THANK YOU!
-
-HOW TO RUN?
-============
-
-```
-npm install
-node server/js/main.js
-```
-
-Then go inside the Client folder and open index.html.
-
-You might want to host a webserver and open index.html in that (e.g. 127.0.0.1/index.html).
-
-Also read the original README files you'll find inside the Client and Server folders to learn the basics of configuring (it's preconfigured right now).
-
-
-Original README
-============
-BrowserQuest is a HTML5/JavaScript multiplayer game experiment.
-
-
-Documentation
--------------
-
-Documentation is located in client and server directories.
-
-
-License
--------
-
-Code is licensed under MPL 2.0. Content is licensed under CC-BY-SA 3.0.
-See the LICENSE file for details.
-
-
-Credits
--------
-Created by [Little Workshop](http://www.littleworkshop.fr):
-
-* Franck Lecollinet - [@whatthefranck](http://twitter.com/whatthefranck)
-* Guillaume Lecollinet - [@glecollinet](http://twitter.com/glecollinet)
