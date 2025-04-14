@@ -1,11 +1,11 @@
-
 var cls = require("./lib/class"),
     _ = require("underscore"),
     Log = require('log'),
     Entity = require('./entity'),
     Character = require('./character'),
     Mob = require('./mob'),
-    Map = require('./map'),
+    theMap = require('./themap'),
+    Map = require('./themap'),
     Npc = require('./npc'),
     Player = require('./player'),
     Item = require('./item'),
@@ -22,14 +22,12 @@ var cls = require("./lib/class"),
 module.exports = World = cls.Class.extend({
     init: function(id, maxPlayers, websocketServer) {
         var self = this;
-
         this.id = id;
         this.maxPlayers = maxPlayers;
         this.server = websocketServer;
         this.ups = 50;
-        
+
         this.map = null;
-        
         this.entities = {};
         this.players = {};
         this.mobs = {};
@@ -41,14 +39,11 @@ module.exports = World = cls.Class.extend({
         this.mobAreas = [];
         this.chestAreas = [];
         this.groups = {};
-        
         this.outgoingQueues = {};
-        
         this.itemCount = 0;
         this.playerCount = 0;
-        
         this.zoneGroupsReady = false;
-        
+
         this.onPlayerConnect(function(player) {
             player.onRequestPosition(function() {
                 if(player.lastCheckpoint) {
@@ -58,24 +53,19 @@ module.exports = World = cls.Class.extend({
                 }
             });
         });
-         
+
         this.onPlayerEnter(function(player) {
             log.info(player.name + " has joined "+ self.id);
-            
+
             if(!player.hasEnteredGame) {
                 self.incrementPlayerCount();
             }
-            
-            // Number of players in this world
-            // and in the overall server world
-            //self.pushToPlayer(player, new Messages.Population(self.playerCount, self.server.connectionsCount()));
-            self.updatePopulation();
 
+            self.updatePopulation();
             self.pushRelevantEntityListTo(player);
-    
+
             var move_callback = function(x, y) {
                 log.debug(player.name + " is moving to (" + x + ", " + y + ").");
-                
                 player.forEachAttacker(function(mob) {
                     var target = self.getEntityById(mob.target);
                     if(target) {
@@ -93,10 +83,9 @@ module.exports = World = cls.Class.extend({
 
             player.onMove(move_callback);
             player.onLootMove(move_callback);
-            
+
             player.onZone(function() {
                 var hasChangedGroups = self.handleEntityGroupMembership(player);
-                
                 if(hasChangedGroups) {
                     self.pushToPreviousGroups(player, new Messages.Destroy(player));
                     self.pushRelevantEntityListTo(player);
@@ -106,27 +95,25 @@ module.exports = World = cls.Class.extend({
             player.onBroadcast(function(message, ignoreSelf) {
                 self.pushToAdjacentGroups(player.group, message, ignoreSelf ? player.id : null);
             });
-            
+
             player.onBroadcastToZone(function(message, ignoreSelf) {
                 self.pushToGroup(player.group, message, ignoreSelf ? player.id : null);
             });
-    
+
             player.onExit(function() {
                 log.info(player.name + " has left the game.");
                 self.removePlayer(player);
                 self.decrementPlayerCount();
-                
                 if(self.removed_callback) {
                     self.removed_callback();
                 }
             });
-            
+
             if(self.added_callback) {
                 self.added_callback();
             }
         });
-        
-        // Called when an entity is attacked by another entity
+
         this.onEntityAttack(function(attacker) {
             var target = self.getEntityById(attacker.target);
             if(target && attacker.type === "mob") {
@@ -134,12 +121,11 @@ module.exports = World = cls.Class.extend({
                 self.moveEntity(attacker, pos.x, pos.y);
             }
         });
-        
+
         this.onRegenTick(function() {
             self.forEachCharacter(function(character) {
                 if(!character.hasFullHealth()) {
                     character.regenHealthBy(Math.floor(character.maxHitPoints / 25));
-            
                     if(character.type === 'player') {
                         self.pushToPlayer(character, character.regen());
                     }
@@ -147,54 +133,44 @@ module.exports = World = cls.Class.extend({
             });
         });
     },
-    
+
     run: function(mapFilePath) {
         var self = this;
-        
         this.map = new Map(mapFilePath);
-
         this.map.ready(function() {
             self.initZoneGroups();
-            
             self.map.generateCollisionGrid();
-            
-            // Populate all mob "roaming" areas
+
             _.each(self.map.mobAreas, function(a) {
                 var area = new MobArea(a.id, a.nb, a.type, a.x, a.y, a.width, a.height, self);
                 area.spawnMobs();
                 area.onEmpty(self.handleEmptyMobArea.bind(self, area));
-                
                 self.mobAreas.push(area);
             });
-            
-            // Create all chest areas
+
             _.each(self.map.chestAreas, function(a) {
                 var area = new ChestArea(a.id, a.x, a.y, a.w, a.h, a.tx, a.ty, a.i, self);
                 self.chestAreas.push(area);
                 area.onEmpty(self.handleEmptyChestArea.bind(self, area));
             });
-            
-            // Spawn static chests
+
             _.each(self.map.staticChests, function(chest) {
                 var c = self.createChest(chest.x, chest.y, chest.i);
                 self.addStaticItem(c);
             });
-            
-            // Spawn static entities
+
             self.spawnStaticEntities();
-            
-            // Set maximum number of entities contained in each chest area
+
             _.each(self.chestAreas, function(area) {
                 area.setNumberOfEntities(area.entities.length);
             });
         });
-        
+
         var regenCount = this.ups * 2;
         var updateCount = 0;
         setInterval(function() {
             self.processGroups();
             self.processQueues();
-            
             if(updateCount < regenCount) {
                 updateCount += 1;
             } else {
@@ -204,10 +180,11 @@ module.exports = World = cls.Class.extend({
                 updateCount = 0;
             }
         }, 1000 / this.ups);
-        
-        log.info(""+this.id+" created (capacity: "+this.maxPlayers+" players).");
+
+        Log.info(""+this.id+" created (capacity: "+this.maxPlayers+" players).");
+
     },
-    
+
     setUpdatesPerSecond: function(ups) {
         this.ups = ups;
     },
