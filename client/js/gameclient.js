@@ -1,5 +1,6 @@
 
-define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory, BISON) {
+define(['player', 'entityfactory', 'lib/bison', 'gametypes'], function(Player, EntityFactory, BISON, Types) {
+
 
     var GameClient = Class.extend({
         init: function(host, port) {
@@ -45,7 +46,9 @@ define(['player', 'entityfactory', 'lib/bison'], function(Player, EntityFactory,
         },
         
         connect: function(dispatcherMode) {
-             var url = "http://" + this.host + ":" + this.port + "/",
+            var url = "http://" + this.host + ":" + this.port + "/";
+
+
                 self = this;
 
              
