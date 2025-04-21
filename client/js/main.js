@@ -172,10 +172,15 @@ define(['jquery', 'app'], function($, App) {
         	    foreground = document.getElementById("foreground"),
         	    input = document.getElementById("chatinput");
 
-    		game = new Game(app);
-    		game.setup('#bubbles', canvas, background, foreground, input);
-    		game.setStorage(app.storage);
-    		app.setGame(game);
+                game = new Game(app);
+                game.setup('#bubbles', canvas, background, foreground, input);
+                game.setStorage(app.storage);
+                
+                game.loadSprites();         // ✅ Ajout 1
+                game.setSpriteScale(2);     // ✅ Ajout 2 (tu peux essayer 1 ou 3 selon le rendu voulu)
+                
+                app.setGame(game);
+                
     		
     		if(app.isDesktop && app.supportsWorkers) {
     		    game.loadMap();

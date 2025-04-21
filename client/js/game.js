@@ -327,31 +327,41 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
         },
     
         setSpriteScale: function(scale) {
+            log.info("🎯 setSpriteScale called with scale:", scale);
             var self = this;
-            
-            if(this.renderer.upscaledRendering) {
-                this.sprites = this.spritesets[0];
-            } else {
-                this.sprites = this.spritesets[scale - 1];
-                
-                _.each(this.entities, function(entity) {
-                    entity.sprite = null;
-                    entity.setSprite(self.sprites[entity.getSpriteName()]);
-                });
-                this.initHurtSprites();
-                this.initShadows();
-                this.initCursors();
+          
+            if (!this.spritesets || !this.spritesets[scale - 1]) {
+              console.warn('Spriteset missing or undefined for scale:', scale);
+              this.sprites = [];
+              return;
             }
-        },
+          
+            if (this.renderer.upscaledRendering) {
+              this.sprites = this.spritesets[0];
+            } else {
+              this.sprites = this.spritesets[scale - 1];
+            }
+          
+            _.each(this.entities, function(entity) {
+              entity.sprite = null;
+              entity.setSprite(self.sprites[entity.spriteName]);
+            });
+          
+            this.initHurtSprites();
+            this.initShadows();
+            this.initCursors();
+          }
+          ,
     
         loadSprites: function() {
-            log.info("Loading sprites...");
-            this.spritesets = [];
-            this.spritesets[0] = {};
-            this.spritesets[1] = {};
-            this.spritesets[2] = {};
-            _.map(this.spriteNames, this.loadSprite, this);
-        },
+    log.info("✅ loadSprites called");
+    this.spritesets = [];
+    this.spritesets[0] = {};
+    this.spritesets[1] = {};
+    this.spritesets[2] = {};
+    _.each(this.spriteNames, this.loadSprite, this);
+
+},
     
         spritesLoaded: function() {
             if(_.any(this.sprites, function(sprite) { return !sprite.isLoaded; })) {

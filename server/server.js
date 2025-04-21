@@ -14,9 +14,10 @@ app.use(express.static(path.join(__dirname, '../client')));
 app.use('/shared', express.static(path.join(__dirname, '../shared')));
 
 // ✅ Point d'entrée par défaut pour éviter l'erreur "Cannot GET /none"
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/index.html'));
+app.get('/config/config_build.json', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/config/config_build.json'));
 });
+
 
 // 🧠 Redirige vers l'index si quelqu'un tape une URL qui ne correspond pas à une route connue
 app.get('*', (req, res) => {

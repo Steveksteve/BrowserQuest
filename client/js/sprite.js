@@ -55,6 +55,15 @@ define(['jquery', 'animation', 'sprites'], function($, Animation, sprites) {
     	        width = this.image.width,
     		    height = this.image.height,
     	        spriteData, data;
+
+
+			// Problem mapping armor sprites
+			// log.info(`this : ${this}`);
+			// log.info(`this.image : ${this.image}`);
+			// log.info(`width : ${width}`);
+			// log.info(`height : ${height}`);
+
+			if (width == 0) return
     
     	    canvas.width = width;
     	    canvas.height = height;
@@ -82,6 +91,7 @@ define(['jquery', 'animation', 'sprites'], function($, Animation, sprites) {
             	    height: this.height
             	};
     	    } catch(e) {
+				log.error(e)
     	        log.error("Error getting image data for sprite : "+this.name);
     	    }
         },

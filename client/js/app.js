@@ -67,7 +67,6 @@ define(['jquery', 'storage'], function($, Storage) {
         
         startGame: function(username, starting_callback) {
             var self = this;
-            
             if(starting_callback) {
                 starting_callback();
             }
