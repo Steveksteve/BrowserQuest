@@ -7,31 +7,32 @@ const config = require('./config.json');
 const app = express();
 const PORT = config.port || 8000;
 
-// Sert statiquement le dossier client
-app.use(express.static(path.join(__dirname, '../client')));
+const clientPath = path.join(__dirname, '../client');
+const sharedPath = path.join(__dirname, '../shared');
 
-// Sert aussi le dossier shared si besoin
-app.use('/shared', express.static(path.join(__dirname, '../shared')));
+// Sert statiquement les dossiers client et shared
+app.use(express.static(clientPath));
+app.use('/shared', express.static(sharedPath));
 
-// ✅ Route spéciale pour éviter "Cannot GET /none"
-app.get('/config/config_build.json', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/config/config_build.json'));
-});
-
-// 🧠 Redirige toutes les autres routes vers l'index
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/index.html'));
-});
-
-// Endpoint santé
+// Endpoint santé - doit être placé AVANT catch-all
 app.get('/health', (_, res) => res.sendStatus(200));
 
-// Démarre le serveur HTTP
+// Route spéciale pour config_build.json
+app.get('/config/config_build.json', (req, res) => {
+  res.sendFile(path.join(clientPath, 'config/config_build.json'));
+});
+
+// Redirige toutes les autres routes vers index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientPath, 'index.html'));
+});
+
+// Lance serveur HTTP
 const server = app.listen(PORT, () => {
   console.log(`✅ HTTP server running on http://localhost:${PORT}`);
 });
 
-// Lance le WebSocket Server en utilisant le serveur HTTP
+// Lance WebSocket server
 const wss = new WebSocketServer({ server });
 
 // Initialise le monde
