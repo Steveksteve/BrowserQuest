@@ -24,6 +24,8 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/index.html'));
 });
 
+// Endpoint to healthcheck 
+app.get('/health', (_, res) => res.sendStatus(200));
 
 // Démarre le serveur HTTP
 const server = app.listen(PORT, () => {
